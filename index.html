@@ -785,7 +785,7 @@
       </section>
       <section class="page-panel" id="greeting-page" aria-labelledby="birthday-title" hidden>
         <p class="eyebrow">A little celebration for you</p>
-        <img class="photo-preview" id="photo-preview" alt="Birthday person's photo">
+        <img class="photo-preview visible" id="photo-preview" src="assets/greeting-portrait.jpg" alt="Noor smiling in a brown hijab">
         <h1 id="birthday-title">Happy <span id="birthday-line">Birthday!</span></h1>
         <p class="message">Wishing you a day filled with your favorite people, little surprises, and all the happiness you deserve.</p>
         <div class="personalize" hidden>
@@ -840,7 +840,23 @@
           <button class="wish-button" type="submit">Add to our memories ✨</button>
         </form>
         <div class="memory-grid" id="memory-grid" aria-live="polite">
-          <p class="memory-empty" id="memory-empty">Our favorite memories will appear here.</p>
+          <figure class="memory-card" style="--memory-order: 0">
+            <img src="assets/memory-henna-portrait.jpeg" alt="A portrait in a blue hijab and pink outfit" loading="lazy">
+            <figcaption>A beautiful moment together</figcaption>
+          </figure>
+          <figure class="memory-card" style="--memory-order: 1">
+            <img src="assets/memory-sleeping.jpeg" alt="A close-up photo shared as a sleeping memory" loading="lazy">
+            <figcaption>When my love was sleeping</figcaption>
+          </figure>
+          <figure class="memory-card" style="--memory-order: 2">
+            <img src="assets/memory-saree-gajra-collage.jpeg" alt="A collage of saree and gajra photos" loading="lazy">
+            <figcaption>When my jaan wearing saree and put gajra on hair</figcaption>
+          </figure>
+          <figure class="memory-card" style="--memory-order: 3">
+            <img src="assets/memory-museum-date.jpeg" alt="A portrait at a museum exhibit" loading="lazy">
+            <figcaption>My beautiful lady going to date with me in a Museum</figcaption>
+          </figure>
+          <p class="memory-empty" id="memory-empty" hidden>Our favorite memories will appear here.</p>
         </div>
         <p class="memory-storage-status" id="memory-storage-status" role="status" aria-live="polite" hidden></p>
       </section>
