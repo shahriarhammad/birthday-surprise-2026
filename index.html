@@ -101,6 +101,12 @@
       font-weight: 800;
     }
 
+    .music-player[hidden],
+    .personalize[hidden],
+    .question-editor[hidden],
+    .answer-field[hidden],
+    .memory-form[hidden] { display: none; }
+
     .music-picker { min-height: 40px; }
 
     .music-url-form {
@@ -742,7 +748,7 @@
     <span class="sparkle" aria-hidden="true" style="--left: 87%; --top: 72%; --size: 22px; --color: #8ac9b0; --duration: 3.6s; --delay: -.8s">✦</span>
 
     <section class="card" aria-label="Birthday celebration">
-      <div class="music-player" aria-label="Background music controls">
+      <div class="music-player" aria-label="Background music controls" hidden>
         <label class="photo-picker music-picker">
           <input id="music-input" type="file" accept="audio/*" aria-label="Choose background music">
           <span id="music-label">♫ Upload music</span>
@@ -782,7 +788,7 @@
         <img class="photo-preview" id="photo-preview" alt="Birthday person's photo">
         <h1 id="birthday-title">Happy <span id="birthday-line">Birthday!</span></h1>
         <p class="message">Wishing you a day filled with your favorite people, little surprises, and all the happiness you deserve.</p>
-        <div class="personalize">
+        <div class="personalize" hidden>
           <label class="name-field" for="name-input">
             <span>Birthday person's name</span>
             <input id="name-input" type="text" maxlength="40" autocomplete="name" placeholder="Type a name">
@@ -804,24 +810,24 @@
       <section class="page-panel" id="question-page" aria-labelledby="question-title" hidden>
         <p class="eyebrow">Just for you</p>
         <h2 class="page-title" id="question-title">One little <span>question...</span></h2>
-        <p class="panel-copy">Write a question you’ve always wanted to ask her, then let her share her answer.</p>
-        <label class="question-editor" for="question-input">
+        <p class="panel-copy">A little question, just for you:</p>
+        <label class="question-editor" for="question-input" hidden>
           Your question for her
           <input id="question-input" type="text" maxlength="180" placeholder="What is one little thing that always makes you smile?">
         </label>
         <p class="question-display" id="question-display">What is one little thing that always makes you smile?</p>
-        <label class="answer-field" for="answer-input">
+        <label class="answer-field" for="answer-input" hidden>
           Her answer
           <textarea id="answer-input" maxlength="500" placeholder="Write your answer here..."></textarea>
         </label>
-        <button class="wish-button" id="answer-button" type="button">Save your answer 💌</button>
-        <p class="answer-saved" id="answer-saved" role="status" aria-live="polite"></p>
+        <button class="wish-button" id="answer-button" type="button" hidden>Save your answer 💌</button>
+        <p class="answer-saved" id="answer-saved" role="status" aria-live="polite" hidden></p>
       </section>
       <section class="page-panel" id="memories-page" aria-labelledby="memories-title" hidden>
         <p class="eyebrow">Our favorite little moments</p>
         <h2 class="page-title" id="memories-title">Beautiful <span>memories</span></h2>
-        <p class="panel-copy">Add photos or videos with a little note. They’re only shown during this visit and aren’t saved.</p>
-        <form class="memory-form" id="memory-form">
+        <p class="panel-copy">A collection of little moments to treasure.</p>
+        <form class="memory-form" id="memory-form" hidden>
           <label class="photo-picker">
             <input id="memory-image" type="file" accept="image/*,video/*" aria-label="Choose a memory photo or video" required>
             <span id="memory-photo-label">＋ Choose a photo or video</span>
@@ -833,9 +839,9 @@
           <button class="wish-button" type="submit">Add to our memories ✨</button>
         </form>
         <div class="memory-grid" id="memory-grid" aria-live="polite">
-          <p class="memory-empty" id="memory-empty">Your added memories will appear here.</p>
+          <p class="memory-empty" id="memory-empty">Our favorite memories will appear here.</p>
         </div>
-        <p class="memory-storage-status" id="memory-storage-status" role="status" aria-live="polite"></p>
+        <p class="memory-storage-status" id="memory-storage-status" role="status" aria-live="polite" hidden></p>
       </section>
     </section>
     <div class="toast" id="toast" role="status" aria-live="polite">Your wish is on its way! 🎂</div>
