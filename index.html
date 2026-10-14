@@ -820,7 +820,7 @@
       <section class="page-panel" id="memories-page" aria-labelledby="memories-title" hidden>
         <p class="eyebrow">Our favorite little moments</p>
         <h2 class="page-title" id="memories-title">Beautiful <span>memories</span></h2>
-        <p class="panel-copy">Add your favorite photos or videos with a little note. Your memories are saved on this device.</p>
+        <p class="panel-copy">Add photos or videos with a little note. They’re only shown during this visit and aren’t saved.</p>
         <form class="memory-form" id="memory-form">
           <label class="photo-picker">
             <input id="memory-image" type="file" accept="image/*,video/*" aria-label="Choose a memory photo or video" required>
@@ -881,68 +881,37 @@
     let musicUrl;
     const secretPin = "2311";
     const memoryUrls = new Set();
-    const mediaDatabase = openMediaDatabase();
+    memoryStorageStatus.textContent = "Photos and videos are temporary. Refreshing or closing this page clears them.";
 
-    function openMediaDatabase() {
-      return new Promise((resolve, reject) => {
-        if (!("indexedDB" in window)) {
-          reject(new Error("This browser does not support local image storage."));
+    function clearPreviouslySavedMedia() {
+      if (!("indexedDB" in window)) return;
+      const request = indexedDB.open("birthday-greeting", 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains("media")) {
+          request.result.createObjectStore("media", { keyPath: "id" });
+        }
+      };
+      request.onerror = () => {
+        memoryStorageStatus.textContent = "Close other open birthday-page tabs, then refresh to clear older saved media.";
+      };
+      request.onsuccess = () => {
+        const database = request.result;
+        if (!database.objectStoreNames.contains("media")) {
+          database.close();
           return;
         }
-        const request = indexedDB.open("birthday-greeting", 1);
-        request.onupgradeneeded = () => {
-          if (!request.result.objectStoreNames.contains("media")) {
-            request.result.createObjectStore("media", { keyPath: "id" });
-          }
+        const transaction = database.transaction("media", "readwrite");
+        transaction.objectStore("media").clear();
+        transaction.oncomplete = () => database.close();
+        transaction.onerror = () => {
+          memoryStorageStatus.textContent = "Close other open birthday-page tabs, then refresh to clear older saved media.";
+          database.close();
         };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error || new Error("Could not open local image storage."));
-        request.onblocked = () => reject(new Error("Local image storage is blocked by another open page."));
-      });
-    }
-
-    function useMediaStore(mode, action) {
-      return mediaDatabase.then((database) => new Promise((resolve, reject) => {
-        const transaction = database.transaction("media", mode);
-        let request;
-        try {
-          request = action(transaction.objectStore("media"));
-        } catch (error) {
-          reject(error);
-          return;
-        }
-        transaction.oncomplete = () => resolve(request ? request.result : undefined);
-        transaction.onerror = () => reject(transaction.error || new Error("Could not save local images."));
-        transaction.onabort = () => reject(transaction.error || new Error("Local image storage transaction was cancelled."));
-      }));
-    }
-
-    async function saveMedia(record) {
-      await useMediaStore("readwrite", (store) => store.put(record));
-    }
-
-    async function removeSavedMedia(id) {
-      await useMediaStore("readwrite", (store) => store.delete(id));
-    }
-
-    async function loadSavedMedia() {
-      const records = await useMediaStore("readonly", (store) => store.getAll());
-      const profile = records.find((record) => record.id === "birthday-profile");
-      if (profile) showProfilePhoto(profile.blob);
-
-      const memories = records
-        .filter((record) => record.kind === "memory")
-        .sort((first, second) => first.createdAt - second.createdAt);
-      for (const memory of memories) renderMemory(memory);
-      memoryEmpty.hidden = memories.length > 0;
-      memoryStorageStatus.textContent = memories.length
-        ? `${memories.length} ${memories.length === 1 ? "memory" : "memories"} saved on this device.`
-        : "New photos and videos will be saved on this device.";
-    }
-
-    function showStorageError(error) {
-      memoryStorageStatus.textContent = "Could not access saved memories. Your browser may have blocked local storage.";
-      showToast(error instanceof Error ? error.message : "Could not save this image.");
+        transaction.onabort = () => {
+          memoryStorageStatus.textContent = "Close other open birthday-page tabs, then refresh to clear older saved media.";
+          database.close();
+        };
+      };
     }
 
     function showProfilePhoto(file) {
@@ -957,9 +926,9 @@
       const figure = document.createElement("figure");
       figure.className = "memory-card";
       figure.style.setProperty("--memory-order", memoryGrid.querySelectorAll(".memory-card").length % 6);
-      const isVideo = memory.blob.type.startsWith("video/");
+      const isVideo = memory.file.type.startsWith("video/");
       const media = document.createElement(isVideo ? "video" : "img");
-      const mediaUrl = URL.createObjectURL(memory.blob);
+      const mediaUrl = URL.createObjectURL(memory.file);
       memoryUrls.add(mediaUrl);
       media.src = mediaUrl;
       const captionText = memory.caption || "A beautiful moment together";
@@ -967,9 +936,9 @@
         media.controls = true;
         media.playsInline = true;
         media.preload = "metadata";
-        media.setAttribute("aria-label", memory.caption || "A saved birthday memory video");
+        media.setAttribute("aria-label", memory.caption || "A birthday memory video");
       } else {
-        media.alt = memory.caption || "A saved birthday memory";
+        media.alt = memory.caption || "A birthday memory";
       }
 
       const caption = document.createElement("figcaption");
@@ -979,20 +948,11 @@
       removeButton.type = "button";
       removeButton.setAttribute("aria-label", "Remove this memory");
       removeButton.textContent = "×";
-      removeButton.addEventListener("click", async () => {
-        removeButton.disabled = true;
-        try {
-          await removeSavedMedia(memory.id);
-          URL.revokeObjectURL(mediaUrl);
-          memoryUrls.delete(mediaUrl);
-          figure.remove();
-          const remaining = memoryGrid.querySelectorAll(".memory-card").length;
-          memoryEmpty.hidden = remaining > 0;
-          memoryStorageStatus.textContent = `${remaining} ${remaining === 1 ? "memory" : "memories"} saved on this device.`;
-        } catch (error) {
-          removeButton.disabled = false;
-          showStorageError(error);
-        }
+      removeButton.addEventListener("click", () => {
+        URL.revokeObjectURL(mediaUrl);
+        memoryUrls.delete(mediaUrl);
+        figure.remove();
+        memoryEmpty.hidden = memoryGrid.querySelectorAll(".memory-card").length > 0;
       });
       figure.append(media, caption, removeButton);
       memoryGrid.append(figure);
@@ -1101,7 +1061,7 @@
       birthdayLine.textContent = name ? `Birthday, ${name}!` : "Birthday!";
     });
 
-    photoInput.addEventListener("change", async () => {
+    photoInput.addEventListener("change", () => {
       const [file] = photoInput.files;
       if (!file) return;
       if (!file.type.startsWith("image/")) {
@@ -1110,12 +1070,6 @@
         return;
       }
       showProfilePhoto(file);
-      try {
-        await saveMedia({ id: "birthday-profile", kind: "profile", blob: file });
-        memoryStorageStatus.textContent = "Birthday photo saved on this device.";
-      } catch (error) {
-        showStorageError(error);
-      }
     });
 
     questionInput.addEventListener("input", () => {
@@ -1143,37 +1097,22 @@
       memoryPhotoLabel.textContent = `✓ ${file.type.startsWith("video/") ? "Video" : "Photo"} selected`;
     });
 
-    memoryForm.addEventListener("submit", async (event) => {
+    memoryForm.addEventListener("submit", (event) => {
       event.preventDefault();
       if (!pendingMemoryFile) {
         showToast("Choose a photo or video for this memory first.");
         return;
       }
-      const submitButton = memoryForm.querySelector('button[type="submit"]');
-      submitButton.disabled = true;
-      const record = {
-        id: `memory-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        kind: "memory",
-        blob: pendingMemoryFile,
+      const memory = {
+        file: pendingMemoryFile,
         caption: memoryCaption.value.trim(),
-        createdAt: Date.now()
       };
-      try {
-        await saveMedia(record);
-        renderMemory(record);
-      } catch (error) {
-        showStorageError(error);
-        return;
-      } finally {
-        submitButton.disabled = false;
-      }
+      renderMemory(memory);
       pendingMemoryFile = null;
       memoryImage.value = "";
       memoryCaption.value = "";
       memoryPhotoLabel.textContent = "＋ Choose a photo or video";
       memoryEmpty.hidden = true;
-      const count = memoryGrid.querySelectorAll(".memory-card").length;
-      memoryStorageStatus.textContent = `${count} ${count === 1 ? "memory" : "memories"} saved on this device.`;
       showToast("Memory added to your collection! 💜");
     });
 
@@ -1209,7 +1148,7 @@
       showToast("Your wish is on its way! 🎂");
     });
 
-    loadSavedMedia().catch(showStorageError);
+    clearPreviouslySavedMedia();
 
     window.addEventListener("beforeunload", () => {
       if (photoUrl) URL.revokeObjectURL(photoUrl);
