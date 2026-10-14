@@ -756,22 +756,22 @@
 
     <section class="card" aria-label="Birthday celebration">
       <div class="music-player" aria-label="Background music controls" hidden>
-        <label class="photo-picker music-picker">
+        <label class="photo-picker music-picker" hidden>
           <input id="music-input" type="file" accept="audio/*" aria-label="Choose background music">
           <span id="music-label">♫ Upload music</span>
         </label>
-        <span class="music-track" id="music-track">No track selected</span>
-        <button class="music-button" id="music-button" type="button" disabled>▶ Play</button>
-        <audio id="background-music" loop preload="none"></audio>
-        <form class="music-url-form" id="music-url-form">
+        <span class="music-track" id="music-track">Dooron Dooron — Paresh Pahuja</span>
+        <button class="music-button" id="music-button" type="button">▶ Play</button>
+        <audio id="background-music" src="assets/dooron-dooron.mp3" loop preload="none"></audio>
+        <form class="music-url-form" id="music-url-form" hidden>
           <label class="name-field" for="music-url-input">
             <span>Or paste a direct online audio link</span>
             <input class="music-url-input" id="music-url-input" type="url" inputmode="url" placeholder="https://example.com/song.mp3" autocomplete="url">
           </label>
           <button class="music-button" type="submit">Use link</button>
         </form>
-        <a class="music-search" href="https://www.google.com/search?q=royalty+free+music+direct+mp3+audio+download" target="_blank" rel="noopener noreferrer">Browse music online ↗</a>
-        <p class="music-status" id="music-status" role="status" aria-live="polite">Choose a song or paste a direct audio link, then press Play. YouTube and streaming-page links won’t play here.</p>
+        <a class="music-search" href="https://www.google.com/search?q=royalty+free+music+direct+mp3+audio+download" target="_blank" rel="noopener noreferrer" hidden>Browse music online ↗</a>
+        <p class="music-status" id="music-status" role="status" aria-live="polite">Your birthday song will start when the surprise opens.</p>
       </div>
       <nav class="page-nav" id="page-nav" aria-label="Birthday pages" hidden>
         <button class="nav-button" type="button" data-page="question" aria-current="page">A question</button>
@@ -849,19 +849,19 @@
         <div class="memory-grid" id="memory-grid" aria-live="polite">
           <figure class="memory-card" style="--memory-order: 0">
             <img src="assets/memory-henna-portrait.jpeg" alt="A portrait in a blue hijab and pink outfit" loading="lazy">
-            <figcaption>A beautiful moment together</figcaption>
+            <figcaption>A little portrait, a whole lot of love 💖</figcaption>
           </figure>
           <figure class="memory-card" style="--memory-order: 1">
             <img src="assets/memory-sleeping.jpeg" alt="A close-up photo shared as a sleeping memory" loading="lazy">
-            <figcaption>When my love was sleeping</figcaption>
+            <figcaption>When my love was fast asleep 🤍</figcaption>
           </figure>
           <figure class="memory-card" style="--memory-order: 2">
             <img src="assets/memory-saree-gajra-collage.jpeg" alt="A collage of saree and gajra photos" loading="lazy">
-            <figcaption>When my jaan wearing saree and put gajra on hair</figcaption>
+            <figcaption>My jaan, radiant in her saree with gajra in her hair 🌸</figcaption>
           </figure>
           <figure class="memory-card" style="--memory-order: 3">
             <img src="assets/memory-museum-date.jpeg" alt="A portrait at a museum exhibit" loading="lazy">
-            <figcaption>My beautiful lady going to date with me in a Museum</figcaption>
+            <figcaption>A museum date with my beautiful lady 🏛️💖</figcaption>
           </figure>
           <p class="memory-empty" id="memory-empty" hidden>Our favorite memories will appear here.</p>
         </div>
@@ -904,6 +904,7 @@
     const backgroundMusic = document.querySelector("#background-music");
     const musicUrlForm = document.querySelector("#music-url-form");
     const musicUrlInput = document.querySelector("#music-url-input");
+    const musicPlayer = document.querySelector(".music-player");
     const colors = ["#ff7195", "#ffd075", "#a98be2", "#8ac9b0", "#ffad72", "#75c9d1"];
     let toastTimer;
     let photoUrl;
@@ -1017,7 +1018,10 @@
       document.querySelector("#pin-page").hidden = true;
       showPage("question");
       document.querySelector('[data-page="question"]').focus();
-      if (backgroundMusic.currentSrc) startBackgroundMusic();
+      if (backgroundMusic.getAttribute("src")) {
+        musicPlayer.hidden = false;
+        startBackgroundMusic();
+      }
     });
 
     function showPage(selectedPage) {
