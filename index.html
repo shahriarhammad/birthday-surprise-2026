@@ -806,6 +806,7 @@
           <div class="sprinkle"></div>
         </div>
         <button class="wish-button" id="wish-button" type="button">Make a wish <span aria-hidden="true">✨</span></button>
+        <p><button class="wish-button" id="memories-button" type="button">Continue to our memories 💖</button></p>
       </section>
       <section class="page-panel" id="question-page" aria-labelledby="question-title" hidden>
         <p class="eyebrow">Just for you</p>
@@ -825,7 +826,7 @@
       </section>
       <section class="page-panel" id="memories-page" aria-labelledby="memories-title" hidden>
         <p class="eyebrow">Our favorite little moments</p>
-        <h2 class="page-title" id="memories-title">Beautiful <span>memories</span></h2>
+        <h2 class="page-title" id="memories-title" tabindex="-1">Beautiful <span>memories</span></h2>
         <p class="panel-copy">A collection of little moments to treasure.</p>
         <form class="memory-form" id="memory-form" hidden>
           <label class="photo-picker">
@@ -991,22 +992,30 @@
       pinInput.removeAttribute("aria-invalid");
       pageNav.hidden = false;
       document.querySelector("#pin-page").hidden = true;
-      document.querySelector("#question-page").hidden = false;
+      showPage("question");
       document.querySelector('[data-page="question"]').focus();
       if (backgroundMusic.currentSrc) startBackgroundMusic();
     });
 
+    function showPage(selectedPage) {
+      navButtons.forEach((button) => {
+        if (button.dataset.page === selectedPage) button.setAttribute("aria-current", "page");
+        else button.removeAttribute("aria-current");
+      });
+      pages.forEach((page) => {
+        page.hidden = page.id !== `${selectedPage}-page`;
+      });
+    }
+
     navButtons.forEach((navButton) => {
       navButton.addEventListener("click", () => {
-        const selectedPage = navButton.dataset.page;
-        navButtons.forEach((button) => {
-          if (button === navButton) button.setAttribute("aria-current", "page");
-          else button.removeAttribute("aria-current");
-        });
-        pages.forEach((page) => {
-          page.hidden = page.id !== `${selectedPage}-page`;
-        });
+        showPage(navButton.dataset.page);
       });
+    });
+
+    document.querySelector("#memories-button").addEventListener("click", () => {
+      showPage("memories");
+      document.querySelector("#memories-title").focus();
     });
 
     musicInput.addEventListener("change", () => {
@@ -1084,9 +1093,15 @@
     });
 
     answerButton.addEventListener("click", () => {
-      answerSaved.textContent = answerInput.value.trim()
-        ? "Answer saved on this page. Thank you for sharing! 💜"
-        : "Write your answer above, then save it here.";
+      if (!answerInput.value.trim()) {
+        answerSaved.textContent = "Write your answer above, then continue.";
+        answerInput.setAttribute("aria-invalid", "true");
+        answerInput.focus();
+        return;
+      }
+      answerInput.removeAttribute("aria-invalid");
+      answerSaved.textContent = "Thank you for sharing! 💜";
+      showPage("greeting");
     });
 
     memoryImage.addEventListener("change", () => {
