@@ -107,7 +107,8 @@
     .answer-field[hidden],
     .memory-form[hidden],
     .music-picker[hidden],
-    .music-url-form[hidden] { display: none; }
+    .music-url-form[hidden],
+    .music-search[hidden] { display: none; }
 
     .music-picker { min-height: 40px; }
 
@@ -317,9 +318,11 @@
 
     .memory-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 14px;
-      text-align: left;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+      max-width: 500px;
+      margin: 28px auto 0;
+      text-align: center;
     }
 
     .memory-card {
@@ -330,10 +333,14 @@
       background: rgb(255 255 255 / 75%);
       box-shadow: 0 8px 24px rgb(99 61 109 / 9%);
       animation: memory-reveal 650ms cubic-bezier(.2,.8,.2,1) both;
-      animation-delay: calc(var(--memory-order, 0) * 100ms);
+      animation-delay: 0ms;
       transform-origin: 50% 75%;
       transition: transform 220ms ease, box-shadow 220ms ease;
     }
+
+    .memory-card:nth-of-type(2) { animation-delay: 240ms; }
+    .memory-card:nth-of-type(3) { animation-delay: 480ms; }
+    .memory-card:nth-of-type(4) { animation-delay: 720ms; }
 
     .memory-card:hover {
       z-index: 1;
@@ -1034,6 +1041,16 @@
       pages.forEach((page) => {
         page.hidden = page.id !== `${selectedPage}-page`;
       });
+      if (selectedPage === "memories") {
+        const memoryCards = memoryGrid.querySelectorAll(".memory-card");
+        memoryCards.forEach((card) => {
+          card.style.animation = "none";
+        });
+        void memoryGrid.offsetWidth;
+        memoryCards.forEach((card) => {
+          card.style.removeProperty("animation");
+        });
+      }
     }
 
     navButtons.forEach((navButton) => {
